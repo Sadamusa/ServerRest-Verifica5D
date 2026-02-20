@@ -19,7 +19,7 @@ public class DaFareService {
      * @return
      * @throws IllegalArgumentException se ...
      */
-    public static Boolean logicaDiGiocata(String giocata, Integer numero, Boolean vittoria) throws IllegalArgumentException {
+    public static Boolean logicaDiGioco(String giocata, Integer numero, Boolean vittoria) throws IllegalArgumentException {
 
         // Controllo se i parametri passati sono validi
         if (!parametriValidi(giocata, numero)) {
