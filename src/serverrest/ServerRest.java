@@ -81,13 +81,6 @@ public class ServerRest {
         endpoints.put("GET", "/api/roulette/paridispari/get?giocata=giocata&numero=numero");
         info.put("endpoints", endpoints);
 
-        Map operatori = new HashMap<>();
-        operatori.put("somma", "SOMMA o +");
-        operatori.put("sottrazione", "SOTTRAZIONE o -");
-        operatori.put("moltiplicazione", "MOLTIPLICAZIONE o * o X");
-        operatori.put("divisione", "DIVISIONE o /");
-        info.put("operatori_supportati", operatori);
-
         String jsonRisposta = gson.toJson(info);
 
         exchange.getResponseHeaders().set("Content-Type", "application/json; charset=UTF-8");

@@ -56,6 +56,9 @@ public class DaFareService {
         if (!g.equals("PARI") && !g.equals("DISPARI")) {
             return false;
         }
+        if (numero == 0) {
+            return false;
+        }
         if (numero < 0 || numero > 36) {
             return false;
         }
