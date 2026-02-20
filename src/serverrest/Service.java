@@ -8,7 +8,7 @@ package serverrest;
  *
  * @author delfo
  */
-public class DaFareService {
+public class Service {
 
     /**
      * Esegue l'operazione matematica richiesta
@@ -38,13 +38,15 @@ public class DaFareService {
         }
 
         String giocataUpper = giocata.toUpperCase().trim();
-
+        
+        
         if (giocataUpper.equals("PARI")) {
             return numero % 2 == 0;
         } else {
             // DISPARI
             return numero % 2 != 0;
         }
+        
     }
 
     // Metodo di validazione dei parametri
@@ -54,9 +56,6 @@ public class DaFareService {
         }
         String g = giocata.toUpperCase().trim();
         if (!g.equals("PARI") && !g.equals("DISPARI")) {
-            return false;
-        }
-        if (numero == 0) {
             return false;
         }
         if (numero < 0 || numero > 36) {

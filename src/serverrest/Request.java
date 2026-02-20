@@ -8,16 +8,16 @@ package serverrest;
  *
  * @author delfo
  */
-public class DaFareRequest {
+public class Request {
     private String giocata;
     private Integer numero;
     
     
     // Costruttore vuoto necessario per GSON
-    public DaFareRequest() {
+    public Request() {
     }
 
-    public DaFareRequest(String giocata, Integer numero) {
+    public Request(String giocata, Integer numero) {
         this.giocata = giocata;
         this.numero = numero;
     }

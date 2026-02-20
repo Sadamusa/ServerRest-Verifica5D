@@ -31,8 +31,8 @@ public class ServerRest {
             HttpServer server = HttpServer.create(new InetSocketAddress(porta), 0);
 
             // Registra gli handler per gli endpoint
-            server.createContext("/api/roulette/paridispari/post", new DaFarePostHandler());
-            server.createContext("/api/roulette/paridispari/get", new DaFareGetHandler());
+            server.createContext("/api/roulette/paridispari/post", new PostHandler());
+            server.createContext("/api/roulette/paridispari/get", new GetHandler());
 
             // Endpoint di benvenuto
             server.createContext("/", ServerRest::gestisciBenvenuto);

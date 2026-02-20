@@ -2,26 +2,28 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
+
 package serverrest;
 
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.gson.JsonSyntaxException;
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
+
+
 
 /**
  *
  * @author delfo
  */
-public class DaFarePostHandler implements HttpHandler {
+
+public class GetHandler implements HttpHandler {
 
     private final Gson gson = new GsonBuilder()
             .setPrettyPrinting()
@@ -30,45 +32,33 @@ public class DaFarePostHandler implements HttpHandler {
     @Override
     public void handle(HttpExchange exchange) throws IOException {
 
-        if (!exchange.getRequestMethod().equalsIgnoreCase("POST")) {
-            inviaErrore(exchange, 405, "Metodo non consentito. Usa POST");
+        if (!exchange.getRequestMethod().equalsIgnoreCase("GET")) {
+            inviaErrore(exchange, 405, "Metodo non consentito. Usa GET");
             return;
         }
 
         try {
-            BufferedReader reader = new BufferedReader(
-                new InputStreamReader(exchange.getRequestBody(), StandardCharsets.UTF_8)
-            );
-            DaFareRequest request = gson.fromJson(reader, DaFareRequest.class);
-            reader.close();
+            Map<String, String> parametri = estraiParametri(exchange.getRequestURI().getQuery());
 
-            if (request == null) {
-                inviaErrore(exchange, 400, "Body della richiesta vuoto o non valido");
+            if (validazioneParametri(parametri)) {
+                inviaErrore(exchange, 400, "Parametri mancanti. Necessari: giocata, numero");
                 return;
             }
 
-            if (validazioneParametri(request)) {
-                inviaErrore(exchange, 400, "Parametri non validi: giocata (PARI/DISPARI) obbligatoria");
-                return;
-            }
+            // Parsing dei valori
+            String giocata = parametri.get("giocata");
+            int    numero  = Integer.parseInt(parametri.get("numero"));
 
             // Logica di calcolo
-            boolean vittoria = DaFareService.logicaDiGioco(
-                request.getGiocata(),
-                request.getNumero()
-            );
+            boolean vittoria = Service.logicaDiGioco(giocata, numero);
 
             // Risposta
-            DaFareResponse response = new DaFareResponse(
-                request.getGiocata(),
-                request.getNumero(),
-                vittoria
-            );
+            Response response = new Response(giocata, numero, vittoria == true ? "Vittoria" : "Sconfitta" );
             String jsonRisposta = gson.toJson(response);
             inviaRisposta(exchange, 200, jsonRisposta);
 
-        } catch (JsonSyntaxException e) {
-            inviaErrore(exchange, 400, "JSON non valido: " + e.getMessage());
+        } catch (NumberFormatException e) {
+            inviaErrore(exchange, 400, "Il parametro 'numero' deve essere un intero");
         } catch (IllegalArgumentException e) {
             inviaErrore(exchange, 400, e.getMessage());
         } catch (Exception e) {
@@ -76,13 +66,27 @@ public class DaFarePostHandler implements HttpHandler {
         }
     }
 
-    // Restituisce true se i parametri non sono validi
-    private boolean validazioneParametri(DaFareRequest request) {
-        if (request.getGiocata() == null || request.getGiocata().trim().isEmpty()) {
-            return true;
+    // Restituisce true se manca qualche parametro obbligatorio
+    private boolean validazioneParametri(Map<String, String> parametri) {
+        return !parametri.containsKey("giocata") || !parametri.containsKey("numero");
+    }
+
+    private Map<String, String> estraiParametri(String query) {
+        Map<String, String> parametri = new HashMap<>();
+        if (query == null || query.isEmpty()) return parametri;
+
+        for (String coppia : query.split("&")) {
+            String[] keyValue = coppia.split("=");
+            if (keyValue.length == 2) {
+                try {
+                    parametri.put(
+                        URLDecoder.decode(keyValue[0], "UTF-8"),
+                        URLDecoder.decode(keyValue[1], "UTF-8")
+                    );
+                } catch (Exception e) { /* ignora parametri malformati */ }
+            }
         }
-        String g = request.getGiocata().toUpperCase().trim();
-        return !g.equals("PARI") && !g.equals("DISPARI");
+        return parametri;
     }
 
     private void inviaRisposta(HttpExchange exchange, int codice, String jsonRisposta)
