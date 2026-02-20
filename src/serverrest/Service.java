@@ -19,12 +19,11 @@ public class Service {
      * @return
      * @throws IllegalArgumentException se ...
      */
-
     /**
      * Controlla se la giocata è vincente.
      *
-     * @param giocata  il tipo puntato ("PARI" o "DISPARI")
-     * @param numero   il numero estratto (0-36)
+     * @param giocata il tipo puntato ("PARI" o "DISPARI")
+     * @param numero il numero estratto (0-36)
      * @return true se ha vinto, false se ha perso
      * @throws IllegalArgumentException se i parametri non sono validi
      */
@@ -33,23 +32,24 @@ public class Service {
 
         if (!parametriValidi(giocata, numero)) {
             throw new IllegalArgumentException(
-                "Parametri non validi. Giocata deve essere PARI o DISPARI, numero tra 0 e 36"
+                    "Parametri non validi. Giocata deve essere PARI o DISPARI, numero tra 0 e 36"
             );
         }
 
+        if (numero == 0) {
+            return false;
+        }
+
         String giocataUpper = giocata.toUpperCase().trim();
-        
-        
+
         if (giocataUpper.equals("PARI")) {
             return numero % 2 == 0;
         } else {
             // DISPARI
             return numero % 2 != 0;
         }
-        
     }
 
-    // Metodo di validazione dei parametri
     private static boolean parametriValidi(String giocata, int numero) {
         if (giocata == null || giocata.trim().isEmpty()) {
             return false;
