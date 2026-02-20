@@ -6,7 +6,7 @@
 package serverrest;
 
 /**
- * Entry point dell'applicazione Calcolatrice REST
+ * Entry point dell'applicazione Roulette REST
  * 
  * @author delfo
  */
@@ -16,13 +16,14 @@ public class App {
      * @param args the command line arguments
      */
     public static void main(String[] args) {
-        // Configurazione porta DA FARE
-        int porta = 0;
+        // Configurazione porta di default
+        int porta = 8080;
         if (args.length > 0) {
             try {
                 porta = Integer.parseInt(args[0]);
             } catch (NumberFormatException e) {
                 System.err.println("Porta non valida, uso porta default 8080");
+                porta = 8080;
             }
         }
         
