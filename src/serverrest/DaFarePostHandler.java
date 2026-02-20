@@ -2,7 +2,6 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-
 package serverrest;
 
 import com.sun.net.httpserver.HttpExchange;
@@ -18,63 +17,56 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
-
-
 /**
  *
  * @author delfo
  */
-
-
 public class DaFarePostHandler implements HttpHandler {
-    
-    // Istanza Gson configurata per pretty printing
+
     private final Gson gson = new GsonBuilder()
             .setPrettyPrinting()
             .create();
-    
+
     @Override
     public void handle(HttpExchange exchange) throws IOException {
-        
-        // Verifica che sia una richiesta POST
+
         if (!exchange.getRequestMethod().equalsIgnoreCase("POST")) {
             inviaErrore(exchange, 405, "Metodo non consentito. Usa POST");
             return;
         }
-        
+
         try {
-            // Legge il body della richiesta
             BufferedReader reader = new BufferedReader(
                 new InputStreamReader(exchange.getRequestBody(), StandardCharsets.UTF_8)
             );
-            
-            // GSON converte automaticamente il JSON in oggetto Java
             DaFareRequest request = gson.fromJson(reader, DaFareRequest.class);
             reader.close();
-            
-            // Validazione
+
             if (request == null) {
                 inviaErrore(exchange, 400, "Body della richiesta vuoto o non valido");
                 return;
             }
-            
-            if (request.getNumero() == null || request.getGiocata().trim().isEmpty()) {
-                inviaErrore(exchange, 400, "Campoi mancante o vuoto");
+
+            if (validazioneParametri(request)) {
+                inviaErrore(exchange, 400, "Parametri non validi: giocata (PARI/DISPARI) obbligatoria");
                 return;
             }
-            
-            // Chiama la logica di calcolo DA FARE
-           
-            
-            // Crea l'oggetto risposta DA FARE
-           DaFareResponse response = new DaFareResponse(
+
+            // Logica di calcolo
+            boolean vittoria = DaFareService.logicaDiGioco(
+                request.getGiocata(),
+                request.getNumero()
             );
-            
-            // GSON converte automaticamente l'oggetto Java in JSON
+
+            // Risposta
+            DaFareResponse response = new DaFareResponse(
+                request.getGiocata(),
+                request.getNumero(),
+                vittoria
+            );
             String jsonRisposta = gson.toJson(response);
-            
             inviaRisposta(exchange, 200, jsonRisposta);
-            
+
         } catch (JsonSyntaxException e) {
             inviaErrore(exchange, 400, "JSON non valido: " + e.getMessage());
         } catch (IllegalArgumentException e) {
@@ -83,41 +75,32 @@ public class DaFarePostHandler implements HttpHandler {
             inviaErrore(exchange, 500, "Errore interno del server: " + e.getMessage());
         }
     }
-    
-    // Validazione dei parametri (da implementare)
+
+    // Restituisce true se i parametri non sono validi
     private boolean validazioneParametri(DaFareRequest request) {
-        
-        return false;
+        if (request.getGiocata() == null || request.getGiocata().trim().isEmpty()) {
+            return true;
+        }
+        String g = request.getGiocata().toUpperCase().trim();
+        return !g.equals("PARI") && !g.equals("DISPARI");
     }
 
-    /**
-     * Invia una risposta di successo
-     */
-    private void inviaRisposta(HttpExchange exchange, int codice, String jsonRisposta) 
+    private void inviaRisposta(HttpExchange exchange, int codice, String jsonRisposta)
             throws IOException {
-        
         exchange.getResponseHeaders().set("Content-Type", "application/json; charset=UTF-8");
         exchange.getResponseHeaders().set("Access-Control-Allow-Origin", "*");
-        
         byte[] bytes = jsonRisposta.getBytes(StandardCharsets.UTF_8);
         exchange.sendResponseHeaders(codice, bytes.length);
-        
         OutputStream os = exchange.getResponseBody();
         os.write(bytes);
         os.close();
     }
-    
-    /**
-     * Invia una risposta di errore in formato JSON
-     */
-    private void inviaErrore(HttpExchange exchange, int codice, String messaggio) 
+
+    private void inviaErrore(HttpExchange exchange, int codice, String messaggio)
             throws IOException {
-        
-        Map errore = new HashMap<>();
+        Map<String, Object> errore = new HashMap<>();
         errore.put("errore", messaggio);
         errore.put("status", codice);
-        
-        String jsonErrore = gson.toJson(errore);
-        inviaRisposta(exchange, codice, jsonErrore);
+        inviaRisposta(exchange, codice, gson.toJson(errore));
     }
 }
