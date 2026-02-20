@@ -19,49 +19,46 @@ public class DaFareService {
      * @return
      * @throws IllegalArgumentException se ...
      */
-    public static Boolean logicaDiGioco(String giocata, Integer numero, Boolean vittoria) throws IllegalArgumentException {
 
-        // Controllo se i parametri passati sono validi
+    /**
+     * Controlla se la giocata è vincente.
+     *
+     * @param giocata  il tipo puntato ("PARI" o "DISPARI")
+     * @param numero   il numero estratto (0-36)
+     * @return true se ha vinto, false se ha perso
+     * @throws IllegalArgumentException se i parametri non sono validi
+     */
+    public static boolean logicaDiCalcolo(String giocata, int numero)
+            throws IllegalArgumentException {
+
         if (!parametriValidi(giocata, numero)) {
-            throw new IllegalArgumentException("Operatore non può essere vuoto");
-        }
-
-        try {
-            
-            if(numero == 0){
-                vittoria = false;
-            }
-            else if(giocata.equalsIgnoreCase("dispari")&& numero%2 != 0){
-                vittoria = true;
-            }
-            else if(giocata.equalsIgnoreCase("dispari")&& numero%2 == 0){
-                vittoria = false;
-            }
-            else if(giocata.equalsIgnoreCase("pari")&& numero%2 != 0){
-                vittoria =false;
-            }
-            else if(giocata.equalsIgnoreCase("pari")&& numero%2 != 0){
-                vittoria = true;
-            }
-
-        } catch (Exception e) {
             throw new IllegalArgumentException(
-                    "Opzione non valida. Opzione deve essere DA FARE");
+                "Parametri non validi. Giocata deve essere PARI o DISPARI, numero tra 0 e 36"
+            );
         }
-        return vittoria; // Placeholder, da sostituire con il risultato della logica di calcolo
+
+        String giocataUpper = giocata.toUpperCase().trim();
+
+        if (giocataUpper.equals("PARI")) {
+            return numero % 2 == 0;
+        } else {
+            // DISPARI
+            return numero % 2 != 0;
+        }
     }
 
-    // Metodo di validazione dei parametri (da implementare)
-    private static boolean parametriValidi(String giocata, Integer numero) {        
-        if(numero.equals("")){
+    // Metodo di validazione dei parametri
+    private static boolean parametriValidi(String giocata, int numero) {
+        if (giocata == null || giocata.trim().isEmpty()) {
             return false;
         }
-        if(giocata.equalsIgnoreCase("dispari")){
-            return true;
+        String g = giocata.toUpperCase().trim();
+        if (!g.equals("PARI") && !g.equals("DISPARI")) {
+            return false;
         }
-        if(giocata.equalsIgnoreCase("pari")){
-            return true;
+        if (numero < 0 || numero > 36) {
+            return false;
         }
-        return false;
+        return true;
     }
 }

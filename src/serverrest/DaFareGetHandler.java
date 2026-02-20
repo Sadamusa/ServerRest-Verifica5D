@@ -45,15 +45,18 @@ public class DaFareGetHandler implements HttpHandler {
             Map<String, String> parametri = estraiParametri(exchange.getRequestURI().getQuery());
             
             // Validazione parametri
-            if (validazioneParametri(parametri)) {
-                inviaErrore(exchange, 400, 
-                    "Parametri mancanti. Necessari: operando1, operando2, operatore");
+            if (!parametri.containsKey("giocata")
+                    || !parametri.containsKey("numero")) {
+                inviaErrore(exchange, 400,
+                        "Parametri mancanti. Necessari: giocata e numero");
                 return;
             }
             
             // Parsing dei valori
-            
-            
+            double operando1 = Double.parseDouble(parametri.get("operando1"));
+            double operando2 = Double.parseDouble(parametri.get("operando2"));
+            String operatore = parametri.get("operatore");
+
             // Esegue la logica di calcolo
             double risultato = DaFareService.logicaDiCalcolo();
             
