@@ -58,8 +58,8 @@ public class DaFarePostHandler implements HttpHandler {
                 return;
             }
             
-            if (validazioneParametri(request)) {
-                inviaErrore(exchange, 400, "Operatore mancante o vuoto");
+            if (request.getNumero() == null || request.getGiocata().trim().isEmpty()) {
+                inviaErrore(exchange, 400, "Campoi mancante o vuoto");
                 return;
             }
             
