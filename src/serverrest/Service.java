@@ -10,15 +10,13 @@ package serverrest;
  */
 public class Service {
 
-    /**
-     * Esegue l'operazione matematica richiesta
-     *
-     * @param
-     * @param
-     * @param
-     * @return
-     * @throws IllegalArgumentException se ...
-     */
+    // FIX [LIEVE - Problema 1]:
+    // In precedenza erano presenti DUE blocchi Javadoc consecutivi per il metodo
+    // logicaDiGioco: il primo era un residuo del template con tag @param e @return
+    // vuoti e privi di descrizione; il secondo era il Javadoc corretto e completo.
+    // La coesistenza creava ambiguità sulla documentazione ufficiale del metodo.
+    // Rimosso il blocco incompleto; rimane solo il Javadoc corretto qui sotto.
+
     /**
      * Controlla se la giocata è vincente.
      *
