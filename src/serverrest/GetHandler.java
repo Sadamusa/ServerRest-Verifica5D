@@ -38,10 +38,12 @@ public class GetHandler implements HttpHandler {
             Map<String, String> parametri = estraiParametri(exchange.getRequestURI().getQuery());
 
             // FIX [LIEVE - Problema 1]:
-            // Il nome "validazioneParametri" era fuorviante: il metodo restituiva TRUE
-            // quando i parametri erano ASSENTI (logica invertita rispetto al nome).
-            // Rinominato in "parametriAssenti" per rendere esplicita l'intenzione:
-            // il blocco if entra quando mancano i parametri obbligatori.
+            /* 
+            Il nome "validazioneParametri" a quanto pare era fuorviante perché il metodo restituiva TRUE
+            quando i parametri erano ASSENTI
+            Rinominato in "parametriAssenti" per rendere esplicita l'intenzione:
+            il blocco if entra quando mancano i parametri obbligatori.
+            */
             if (parametriAssenti(parametri)) {
                 inviaErrore(exchange, 400, "Parametri mancanti. Necessari: giocata, numero");
                 return;
@@ -55,18 +57,17 @@ public class GetHandler implements HttpHandler {
             boolean vittoria = Service.logicaDiGioco(giocata, numero);
 
             // FIX [ERRATO]:
-            // In precedenza il campo "vittoria" veniva costruito con l'espressione
-            //   vittoria == true ? "Vittoria" : "Sconfitta"
-            // producendo le stringhe "Vittoria" / "Sconfitta", non conformi alla specifica.
-            // La specifica richiede i valori booleani "true" o "false".
-            //
-            // FIX [LIEVE - Problema 3]:
-            // L'espressione "vittoria == true" è una ridondanza stilistica: confrontare
-            // un booleano con il letterale 'true' è inutile. Corretto usando direttamente
-            // il valore booleano 'vittoria' come stringa tramite String.valueOf().
-            //
-            // Soluzione adottata: String.valueOf(vittoria) produce la stringa "true" o
-            // "false" a seconda del valore booleano, rispettando la specifica.
+            /* 
+            In precedenza il campo "vittoria" veniva costruito con l'espressione
+            vittoria == true ? "Vittoria" : "Sconfitta" per rendere il tutto più leggibile ed esteticamente migliore
+            producendo le stringhe "Vittoria" / "Sconfitta", non conformi alla specifica a quanto pare.
+            */            
+            
+            //FIX [LIEVE - Problema 3]:
+            /*
+            String.valueOf(vittoria) produce la stringa "true" o
+            "false" a seconda del valore booleano
+            */
             Response response = new Response(giocata, numero, String.valueOf(vittoria));
             String jsonRisposta = gson.toJson(response);
             inviaRisposta(exchange, 200, jsonRisposta);
@@ -81,21 +82,21 @@ public class GetHandler implements HttpHandler {
     }
 
     // FIX [LIEVE - Problema 1]:
-    // Metodo rinominato da "validazioneParametri" a "parametriAssenti" per riflettere
-    // correttamente il comportamento: restituisce TRUE quando i parametri obbligatori
-    // sono assenti, FALSE quando sono entrambi presenti.
-    // La logica interna rimane invariata.
+    /*
+    Metodo rinominato da "validazioneParametri" a "parametriAssenti"
+    */
     private boolean parametriAssenti(Map<String, String> parametri) {
         return !parametri.containsKey("giocata") || !parametri.containsKey("numero");
     }
 
     // FIX [LIEVE - Problema 2]:
-    // Il metodo utilizzava URLDecoder.decode(String, String) con la stringa letterale
-    // "UTF-8", firma deprecata a partire da Java 10 perché può lanciare
-    // UnsupportedEncodingException (eccezione checked inutile per un encoding sempre
-    // disponibile) e non è type-safe.
-    // Corretto usando URLDecoder.decode(String, Charset) con StandardCharsets.UTF_8,
-    // che è la forma moderna, type-safe e non deprecata.
+    /*
+    Il metodo utilizzava URLDecoder.decode(String, String) con la stringa letterale
+    "UTF-8", a quanto pare è una firma deprecata a partire da Java 10 perché può lanciare
+    UnsupportedEncodingException e non è type-safe.
+    Corretto usando URLDecoder.decode(String, Charset) con StandardCharsets.UTF_8,
+    che è la forma moderna, type-safe e non deprecata.
+    */
     private Map<String, String> estraiParametri(String query) {
         Map<String, String> parametri = new HashMap<>();
         if (query == null || query.isEmpty()) return parametri;
