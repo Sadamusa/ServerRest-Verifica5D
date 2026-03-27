@@ -53,6 +53,19 @@ public class GetHandler implements HttpHandler {
             boolean vittoria = Service.logicaDiGioco(giocata, numero);
 
             // Risposta
+            /*
+            TODO:
+            --- File: GetHandler.java ---
+
+            Il valore del campo "vittoria" nella risposta JSON viene costruito con
+            l'espressione ternaria `vittoria == true ? "Vittoria" : "Sconfitta"`, producendo
+            le stringhe "Vittoria" oppure "Sconfitta". La specifica richiede esplicitamente
+            che il campo "vittoria" contenga i valori booleani "true" o "false" (come
+            booleano nativo JSON o come stringa contenente la parola "true"/"false"). I
+            valori "Vittoria" e "Sconfitta" non corrispondono in alcun modo al formato
+            atteso e rendono la risposta non conforme alla specifica in tutti i casi in cui
+            viene invocato l'endpoint GET.           
+            */
             Response response = new Response(giocata, numero, vittoria == true ? "Vittoria" : "Sconfitta" );
             String jsonRisposta = gson.toJson(response);
             inviaRisposta(exchange, 200, jsonRisposta);
@@ -67,6 +80,15 @@ public class GetHandler implements HttpHandler {
     }
 
     // Restituisce true se manca qualche parametro obbligatorio
+    /*
+    Il metodo `estraiParametri` utilizza il metodo deprecato
+    `URLDecoder.decode(String, String)` passando la codifica come stringa letterale
+    "UTF-8". A partire da Java 10 tale firma e' deprecata in favore della versione
+    che accetta un oggetto `java.nio.charset.Charset`, ad esempio
+    `StandardCharsets.UTF_8`, che evita la `UnsupportedEncodingException` ed e'
+    considerata la forma moderna e type-safe.
+    Non credo sia un errore, soprattutto perché non sapevo fosse un metodo deprecato
+    */
     private boolean validazioneParametri(Map<String, String> parametri) {
         return !parametri.containsKey("giocata") || !parametri.containsKey("numero");
     }
