@@ -16,13 +16,10 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
-
-
 /**
  *
  * @author delfo
  */
-
 public class GetHandler implements HttpHandler {
 
     private final Gson gson = new GsonBuilder()
@@ -40,7 +37,12 @@ public class GetHandler implements HttpHandler {
         try {
             Map<String, String> parametri = estraiParametri(exchange.getRequestURI().getQuery());
 
-            if (validazioneParametri(parametri)) {
+            // FIX [LIEVE - Problema 1]:
+            // Il nome "validazioneParametri" era fuorviante: il metodo restituiva TRUE
+            // quando i parametri erano ASSENTI (logica invertita rispetto al nome).
+            // Rinominato in "parametriAssenti" per rendere esplicita l'intenzione:
+            // il blocco if entra quando mancano i parametri obbligatori.
+            if (parametriAssenti(parametri)) {
                 inviaErrore(exchange, 400, "Parametri mancanti. Necessari: giocata, numero");
                 return;
             }
@@ -52,21 +54,20 @@ public class GetHandler implements HttpHandler {
             // Logica di calcolo
             boolean vittoria = Service.logicaDiGioco(giocata, numero);
 
-            // Risposta
-            /*
-            TODO:
-            --- File: GetHandler.java ---
-
-            Il valore del campo "vittoria" nella risposta JSON viene costruito con
-            l'espressione ternaria `vittoria == true ? "Vittoria" : "Sconfitta"`, producendo
-            le stringhe "Vittoria" oppure "Sconfitta". La specifica richiede esplicitamente
-            che il campo "vittoria" contenga i valori booleani "true" o "false" (come
-            booleano nativo JSON o come stringa contenente la parola "true"/"false"). I
-            valori "Vittoria" e "Sconfitta" non corrispondono in alcun modo al formato
-            atteso e rendono la risposta non conforme alla specifica in tutti i casi in cui
-            viene invocato l'endpoint GET.           
-            */
-            Response response = new Response(giocata, numero, vittoria == true ? "Vittoria" : "Sconfitta" );
+            // FIX [ERRATO]:
+            // In precedenza il campo "vittoria" veniva costruito con l'espressione
+            //   vittoria == true ? "Vittoria" : "Sconfitta"
+            // producendo le stringhe "Vittoria" / "Sconfitta", non conformi alla specifica.
+            // La specifica richiede i valori booleani "true" o "false".
+            //
+            // FIX [LIEVE - Problema 3]:
+            // L'espressione "vittoria == true" è una ridondanza stilistica: confrontare
+            // un booleano con il letterale 'true' è inutile. Corretto usando direttamente
+            // il valore booleano 'vittoria' come stringa tramite String.valueOf().
+            //
+            // Soluzione adottata: String.valueOf(vittoria) produce la stringa "true" o
+            // "false" a seconda del valore booleano, rispettando la specifica.
+            Response response = new Response(giocata, numero, String.valueOf(vittoria));
             String jsonRisposta = gson.toJson(response);
             inviaRisposta(exchange, 200, jsonRisposta);
 
@@ -79,20 +80,22 @@ public class GetHandler implements HttpHandler {
         }
     }
 
-    // Restituisce true se manca qualche parametro obbligatorio
-    /*
-    Il metodo `estraiParametri` utilizza il metodo deprecato
-    `URLDecoder.decode(String, String)` passando la codifica come stringa letterale
-    "UTF-8". A partire da Java 10 tale firma e' deprecata in favore della versione
-    che accetta un oggetto `java.nio.charset.Charset`, ad esempio
-    `StandardCharsets.UTF_8`, che evita la `UnsupportedEncodingException` ed e'
-    considerata la forma moderna e type-safe.
-    Non credo sia un errore, soprattutto perché non sapevo fosse un metodo deprecato
-    */
-    private boolean validazioneParametri(Map<String, String> parametri) {
+    // FIX [LIEVE - Problema 1]:
+    // Metodo rinominato da "validazioneParametri" a "parametriAssenti" per riflettere
+    // correttamente il comportamento: restituisce TRUE quando i parametri obbligatori
+    // sono assenti, FALSE quando sono entrambi presenti.
+    // La logica interna rimane invariata.
+    private boolean parametriAssenti(Map<String, String> parametri) {
         return !parametri.containsKey("giocata") || !parametri.containsKey("numero");
     }
 
+    // FIX [LIEVE - Problema 2]:
+    // Il metodo utilizzava URLDecoder.decode(String, String) con la stringa letterale
+    // "UTF-8", firma deprecata a partire da Java 10 perché può lanciare
+    // UnsupportedEncodingException (eccezione checked inutile per un encoding sempre
+    // disponibile) e non è type-safe.
+    // Corretto usando URLDecoder.decode(String, Charset) con StandardCharsets.UTF_8,
+    // che è la forma moderna, type-safe e non deprecata.
     private Map<String, String> estraiParametri(String query) {
         Map<String, String> parametri = new HashMap<>();
         if (query == null || query.isEmpty()) return parametri;
@@ -102,8 +105,8 @@ public class GetHandler implements HttpHandler {
             if (keyValue.length == 2) {
                 try {
                     parametri.put(
-                        URLDecoder.decode(keyValue[0], "UTF-8"),
-                        URLDecoder.decode(keyValue[1], "UTF-8")
+                        URLDecoder.decode(keyValue[0], StandardCharsets.UTF_8), // FIX: Charset al posto di String
+                        URLDecoder.decode(keyValue[1], StandardCharsets.UTF_8)  // FIX: Charset al posto di String
                     );
                 } catch (Exception e) { /* ignora parametri malformati */ }
             }
