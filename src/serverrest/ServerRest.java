@@ -72,11 +72,10 @@ public class ServerRest {
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
         // FIX [LIEVE - Problema 1]:
-        // Le variabili "info" ed "endpoints" erano dichiarate con tipi grezzi (raw types),
-        // cioè Map senza parametri di tipo generici (es. solo "Map" invece di
-        // "Map<String, Object>"). I tipi grezzi producono warning "unchecked assignment"
-        // a compile-time e rinunciano alle garanzie di type-safety offerte dai generics.
-        // Corretto specificando esplicitamente i parametri di tipo <String, Object>.
+        /*
+        Qua non ho capito bene cosa ho sbagliato, anche perché ho preso il codice del prof dalla calcolatrice e l'ho adattato a questo progetto
+         Corretto specificando esplicitamente i parametri di tipo <String, Object>.
+        */
         Map<String, Object> info = new HashMap<>();
         info.put("messaggio", "Benvenuto alla Roulette REST API");
         info.put("versione", "1.0.0");
