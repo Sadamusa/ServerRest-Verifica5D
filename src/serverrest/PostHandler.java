@@ -47,8 +47,19 @@ public class PostHandler implements HttpHandler {
                 return;
             }
 
-            if (validazioneaAssenzaParametri(request)) {
-                inviaErrore(exchange, 400, "Parametri non validi: giocata (PARI/DISPARI) obbligatoria");
+            // FIX [ERRATO - Problema 2]:
+            // Il metodo di validazione originale controllava solo il campo "giocata",
+            // ignorando completamente il campo "numero". Se il client inviava un body
+            // JSON senza "numero", GSON impostava request.numero = null. La validazione
+            // passava comunque, e la chiamata a Service.logicaDiGioco(..., request.getNumero())
+            // causava una NullPointerException per auto-unboxing di Integer null in int.
+            // L'eccezione veniva catturata dal blocco catch generico restituendo HTTP 500
+            // invece del corretto HTTP 400.
+            //
+            // Soluzione: il metodo validazioneAssenzaParametri ora controlla anche che
+            // request.getNumero() non sia null prima di proseguire.
+            if (validazioneAssenzaParametri(request)) {
+                inviaErrore(exchange, 400, "Parametri non validi: giocata (PARI/DISPARI) e numero (0-36) obbligatori");
                 return;
             }
 
@@ -58,24 +69,21 @@ public class PostHandler implements HttpHandler {
                 request.getNumero()
             );
 
-            // Risposta
-            /*
-            TODO:
-            --- File: GetHandler.java ---
-
-            Il valore del campo "vittoria" nella risposta JSON viene costruito con
-            l'espressione ternaria `vittoria == true ? "Vittoria" : "Sconfitta"`, producendo
-            le stringhe "Vittoria" oppure "Sconfitta". La specifica richiede esplicitamente
-            che il campo "vittoria" contenga i valori booleani "true" o "false" (come
-            booleano nativo JSON o come stringa contenente la parola "true"/"false"). I
-            valori "Vittoria" e "Sconfitta" non corrispondono in alcun modo al formato
-            atteso e rendono la risposta non conforme alla specifica in tutti i casi in cui
-            viene invocato l'endpoint GET.
-            */
+            // FIX [ERRATO - Problema 1]:
+            // Come in GetHandler.java, il campo "vittoria" veniva costruito con:
+            //   vittoria == true ? "Vittoria" : "Sconfitta"
+            // producendo le stringhe non conformi "Vittoria" / "Sconfitta".
+            // La specifica richiede i valori booleani "true" o "false".
+            //
+            // FIX [LIEVE - Problema 1]:
+            // L'espressione "vittoria == true" è stilisticamente ridondante.
+            // Corretto usando direttamente String.valueOf(vittoria) che produce
+            // la stringa "true" o "false" in modo conciso e conforme alla specifica.
             Response response = new Response(
                 request.getGiocata(),
                 request.getNumero(),
-                vittoria == true ? "Vittoria" : "Sconfitta"       );
+                String.valueOf(vittoria) // FIX: "true"/"false" invece di "Vittoria"/"Sconfitta"
+            );
             String jsonRisposta = gson.toJson(response);
             inviaRisposta(exchange, 200, jsonRisposta);
 
@@ -88,28 +96,32 @@ public class PostHandler implements HttpHandler {
         }
     }
 
-    // Restituisce true se i parametri non sono validi
-    /*
-    TODO:
-    Il metodo `validazioneParametri(Request request)` controlla unicamente la
-    presenza e la validita' del campo "giocata", ma non verifica se il campo
-    "numero" e' stato incluso nel JSON della richiesta. Quando il client invia un
-    body JSON privo del campo "numero", GSON deserializza l'oggetto Request con il
-    campo `numero` impostato a `null`. Il metodo di validazione restituisce
-    comunque `false` (parametri ritenuti validi), consentendo l'esecuzione fino
-    alla chiamata di `Service.logicaDiGioco(request.getGiocata(), request.getNumero())`,
-    dove l'auto-unboxing dell'`Integer` null in tipo primitivo `int` genera una
-    `NullPointerException`. L'eccezione viene catturata dal blocco `catch (Exception e)`
-    generico e produce una risposta con codice HTTP 500 anziche' il corretto 400,
-    segnalando un errore interno del server invece di un errore di validazione
-    dell'input.
-    */
-    private boolean validazioneaAssenzaParametri(Request request) {
+    // FIX [ERRATO - Problema 2]:
+    // Aggiunto controllo su request.getNumero() == null.
+    // In precedenza il metodo verificava solo "giocata", permettendo che una richiesta
+    // POST priva del campo "numero" superasse la validazione e causasse NullPointerException
+    // durante l'auto-unboxing in Service.logicaDiGioco(), producendo una risposta HTTP 500
+    // errata. Ora, se "numero" è assente (null), il metodo restituisce true (parametri
+    // non validi) e viene inviata correttamente una risposta HTTP 400.
+    //
+    // Restituisce true se i parametri non sono validi (giocata assente/errata o numero null).
+    private boolean validazioneAssenzaParametri(Request request) {
+        // Controlla che "giocata" sia presente e non vuota
         if (request.getGiocata() == null || request.getGiocata().trim().isEmpty()) {
             return true;
         }
+        // Controlla che "giocata" sia PARI o DISPARI
         String g = request.getGiocata().toUpperCase().trim();
-        return !g.equals("PARI") && !g.equals("DISPARI");
+        if (!g.equals("PARI") && !g.equals("DISPARI")) {
+            return true;
+        }
+        // FIX: Controlla che "numero" sia presente (non null).
+        // Senza questo controllo, l'auto-unboxing di Integer null in int
+        // in Service.logicaDiGioco() generava NullPointerException -> HTTP 500.
+        if (request.getNumero() == null) {
+            return true;
+        }
+        return false;
     }
 
     private void inviaRisposta(HttpExchange exchange, int codice, String jsonRisposta)
