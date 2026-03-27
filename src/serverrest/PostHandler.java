@@ -48,16 +48,15 @@ public class PostHandler implements HttpHandler {
             }
 
             // FIX [ERRATO - Problema 2]:
-            // Il metodo di validazione originale controllava solo il campo "giocata",
-            // ignorando completamente il campo "numero". Se il client inviava un body
-            // JSON senza "numero", GSON impostava request.numero = null. La validazione
-            // passava comunque, e la chiamata a Service.logicaDiGioco(..., request.getNumero())
-            // causava una NullPointerException per auto-unboxing di Integer null in int.
-            // L'eccezione veniva catturata dal blocco catch generico restituendo HTTP 500
-            // invece del corretto HTTP 400.
-            //
-            // Soluzione: il metodo validazioneAssenzaParametri ora controlla anche che
-            // request.getNumero() non sia null prima di proseguire.
+            /*
+            Il metodo di validazione originale controllava solo il campo "giocata",
+            ignorando completamente il campo "numero". Se il client inviava un body
+            JSON senza "numero", GSON impostava request.numero = null. La validazione
+            passava comunque, e la chiamata a Service.logicaDiGioco(..., request.getNumero())
+            causava una NullPointerException per auto-unboxing di Integer null in int.
+            L'eccezione veniva catturata dal blocco catch generico restituendo HTTP 500
+            invece del corretto HTTP 400.          
+            */
             if (validazioneAssenzaParametri(request)) {
                 inviaErrore(exchange, 400, "Parametri non validi: giocata (PARI/DISPARI) e numero (0-36) obbligatori");
                 return;
@@ -70,15 +69,16 @@ public class PostHandler implements HttpHandler {
             );
 
             // FIX [ERRATO - Problema 1]:
-            // Come in GetHandler.java, il campo "vittoria" veniva costruito con:
-            //   vittoria == true ? "Vittoria" : "Sconfitta"
-            // producendo le stringhe non conformi "Vittoria" / "Sconfitta".
-            // La specifica richiede i valori booleani "true" o "false".
-            //
-            // FIX [LIEVE - Problema 1]:
-            // L'espressione "vittoria == true" è stilisticamente ridondante.
-            // Corretto usando direttamente String.valueOf(vittoria) che produce
-            // la stringa "true" o "false" in modo conciso e conforme alla specifica.
+            /*
+             Come in GetHandler.java, il campo "vittoria" veniva costruito con:
+               vittoria == true ? "Vittoria" : "Sconfitta"
+             producendo le stringhe sbagliatissime "Vittoria" / "Sconfitta".
+            */
+            
+            //FIX [LIEVE - Problema 1]:
+            /*
+             Corretto usando direttamente String.valueOf(vittoria) che produce
+            */
             Response response = new Response(
                 request.getGiocata(),
                 request.getNumero(),
@@ -97,14 +97,15 @@ public class PostHandler implements HttpHandler {
     }
 
     // FIX [ERRATO - Problema 2]:
-    // Aggiunto controllo su request.getNumero() == null.
-    // In precedenza il metodo verificava solo "giocata", permettendo che una richiesta
-    // POST priva del campo "numero" superasse la validazione e causasse NullPointerException
-    // durante l'auto-unboxing in Service.logicaDiGioco(), producendo una risposta HTTP 500
-    // errata. Ora, se "numero" è assente (null), il metodo restituisce true (parametri
-    // non validi) e viene inviata correttamente una risposta HTTP 400.
-    //
-    // Restituisce true se i parametri non sono validi (giocata assente/errata o numero null).
+    /*
+    Il metodo di validazione originale controllava solo il campo "giocata",
+    ignorando completamente il campo "numero". Se il client inviava un body
+    JSON senza "numero", GSON impostava request.numero = null. La validazione
+    passava comunque, e la chiamata a Service.logicaDiGioco(..., request.getNumero())
+    causava una NullPointerException per auto-unboxing di Integer null in int.
+    L'eccezione veniva catturata dal blocco catch generico restituendo HTTP 500
+    invece del corretto HTTP 400.   
+    */
     private boolean validazioneAssenzaParametri(Request request) {
         // Controlla che "giocata" sia presente e non vuota
         if (request.getGiocata() == null || request.getGiocata().trim().isEmpty()) {
