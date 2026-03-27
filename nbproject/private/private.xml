@@ -3,9 +3,12 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/C:/Users/laurenzi.samuele/Documents/GitHub/ServerRest-Verifica5D/src/serverrest/DaFareService.java</file>
-            <file>file:/C:/Users/laurenzi.samuele/Documents/GitHub/ServerRest-Verifica5D/src/serverrest/DaFareRequest.java</file>
-            <file>file:/C:/Users/laurenzi.samuele/Documents/GitHub/ServerRest-Verifica5D/src/serverrest/DaFareResponse.java</file>
+            <file>file:/C:/Users/laurenzi.samuele/Documents/GitHub/ServerRest-Verifica5D/src/serverrest/App.java</file>
+            <file>file:/C:/Users/laurenzi.samuele/Documents/GitHub/ServerRest-Verifica5D/src/serverrest/GetHandler.java</file>
+            <file>file:/C:/Users/laurenzi.samuele/Documents/GitHub/ServerRest-Verifica5D/src/serverrest/Response.java</file>
+            <file>file:/C:/Users/laurenzi.samuele/Documents/GitHub/ServerRest-Verifica5D/src/serverrest/ServerRest.java</file>
+            <file>file:/C:/Users/laurenzi.samuele/Documents/GitHub/ServerRest-Verifica5D/src/serverrest/Service.java</file>
+            <file>file:/C:/Users/laurenzi.samuele/Documents/GitHub/ServerRest-Verifica5D/src/serverrest/PostHandler.java</file>
         </group>
     </open-files>
 </project-private>
