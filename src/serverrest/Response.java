@@ -14,11 +14,10 @@ public class Response {
     private Integer numero;
 
     // NOTA [LIEVE - Problema 2]:
-    // Il campo "vittoria" è dichiarato di tipo String. La specifica mostra negli esempi
-    // i valori booleani nativi JSON true/false (senza virgolette), ma include una nota
-    // che ammette anche una "stringa contenente il valore booleano".
-    // Il tipo String è mantenuto per coerenza con la scelta progettuale originale;
-    // i valori prodotti dal handler sono ora "true" / "false" grazie a String.valueOf().
+    /*
+    Sinceramente qua non ho capito cosa ho sbagliato.
+    Nella verifica poteva essere sia Boolean che String e io per problemi progettuali ho scelto String
+    */
     private String vittoria;
 
     // Costruttore vuoto necessario per GSON
@@ -56,10 +55,6 @@ public class Response {
         this.vittoria = vittoria;
     }
 
-    // FIX [LIEVE - Problema 1]:
-    // Il toString() originale restituiva "DaFareResponse{...}", un prefisso residuo
-    // del template di verifica che non corrispondeva al nome reale della classe.
-    // Corretto in "Response{...}" per allinearlo al nome effettivo della classe.
     @Override
     public String toString() {
         return "Response{" + "giocata=" + giocata + ", numero=" + numero + ", vittoria=" + vittoria + '}';
