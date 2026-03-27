@@ -14,7 +14,10 @@ public class Request {
 
     // NOTA [LIEVE - Problema 2]:
     /*
-    Ho commesso l'errore di definire la variabile "numero" come int invece che Integer
+    Non ho commesso errore:
+    Nel codice originale numero era Integer. 
+    A quanto pare in linea teorica int sarebbe più coerente con la natura del campo, 
+    Ma l'uso di Integer era intenzionale e corretto ai fini della deserializzazione GSON.       
     */
     private Integer numero;
 

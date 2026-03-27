@@ -77,12 +77,12 @@ public class PostHandler implements HttpHandler {
             
             //FIX [LIEVE - Problema 1]:
             /*
-             Corretto usando direttamente String.valueOf(vittoria) che produce
+             Corretto usando direttamente String.valueOf(vittoria) che produce "true"/"false" invece di "Vittoria"/"Sconfitta"
             */
             Response response = new Response(
                 request.getGiocata(),
                 request.getNumero(),
-                String.valueOf(vittoria) // FIX: "true"/"false" invece di "Vittoria"/"Sconfitta"
+                String.valueOf(vittoria)
             );
             String jsonRisposta = gson.toJson(response);
             inviaRisposta(exchange, 200, jsonRisposta);
